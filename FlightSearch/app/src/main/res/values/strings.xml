@@ -3,4 +3,6 @@
     <string name="depart">DEPART</string>
     <string name="arrive">ARRIVE</string>
     <string name="airport_format">%s %s</string>
+    <string name="favorite_flights">Favorite Flights</string>
+    <string name="flights_for">Flights for %1$s</string>
 </resources>

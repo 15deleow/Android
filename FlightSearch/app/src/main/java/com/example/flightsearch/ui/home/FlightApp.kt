@@ -7,12 +7,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.flightsearch.R
 import com.example.flightsearch.ui.FlightViewModel
 import com.example.flightsearch.ui.theme.FlightSearchTheme
 
@@ -65,12 +71,15 @@ fun FlightAppBody(
             }
         )
 
+
         if(flightUiState.searchText.isEmpty()){
+            ListHeaderText(header = stringResource(id = R.string.favorite_flights))
             FlightCardList(
                 flights = airportViewModel.favoriteFlightPair,
                 flightViewModel = airportViewModel
             )
         }else{
+            ListHeaderText(header = stringResource(R.string.flights_for, selectedAirport))
             if(selectedAirport.isNotEmpty()) {
                 FlightCardList(
                     modifier = Modifier,
@@ -80,6 +89,19 @@ fun FlightAppBody(
             }
         }
     }
+}
+
+@Composable
+fun ListHeaderText(header: String){
+    Text(
+        text = header,
+        style = MaterialTheme.typography.displayMedium.copy(
+            fontWeight = FontWeight.Medium,
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.primary
+        ),
+        modifier = Modifier.padding(8.dp)
+    )
 }
 
 @Preview(showBackground = true)
