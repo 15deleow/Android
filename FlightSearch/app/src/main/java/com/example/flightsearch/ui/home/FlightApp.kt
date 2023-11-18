@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -47,6 +48,7 @@ fun FlightApp(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FlightAppBody(
     airportViewModel: FlightViewModel,
@@ -65,7 +67,6 @@ fun FlightAppBody(
                 airportViewModel.onSearchTextChanged(newText)
              },
             onSuggestionClick = { selectedText ->
-                airportViewModel.onSuggestionClick(selectedText)
                 airportViewModel.generateFlights(selectedText, airportsList)
                 selectedAirport = selectedText
             }
@@ -78,9 +79,10 @@ fun FlightAppBody(
                 flights = airportViewModel.favoriteFlightPair,
                 flightViewModel = airportViewModel
             )
+            selectedAirport = ""
         }else{
-            ListHeaderText(header = stringResource(R.string.flights_for, selectedAirport))
             if(selectedAirport.isNotEmpty()) {
+                ListHeaderText(header = stringResource(R.string.flights_for, selectedAirport))
                 FlightCardList(
                     modifier = Modifier,
                     flightUiState.flightList,

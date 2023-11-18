@@ -23,8 +23,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.flightsearch.FlightSearchApplication
 import com.example.flightsearch.R
+import com.example.flightsearch.data.Airport
 import com.example.flightsearch.data.FlightPair
 import com.example.flightsearch.ui.FlightViewModel
 
@@ -133,75 +136,92 @@ fun ToggleFavoriteButton(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewToggleButton(){
-//    ToggleFavoriteButton()
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewFlightCardItem(){
-//    val flights = FlightPair(
-//        departureAirport = Airport(
-//            id =  1,
-//            iataCode = "FCO",
-//            name = "Leonardo da Vinci International Airport",
-//            passengers = 100),
-//        arrivalAirport = Airport(
-//            id =  2,
-//            iataCode = "SVO",
-//            name = "Sheremetyevo- A.S Pushkin International",
-//            passengers = 100)
-//    )
-//    FlightCardItem(flight = flights, flightViewModel = )
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewFlightList(){
-//    val flightList = listOf<FlightPair>(
-//        FlightPair(
-//            departureAirport = Airport(
-//                id =  1,
-//                iataCode = "FCO",
-//                name = "Leonardo da Vinci International Airport",
-//                passengers = 100),
-//            arrivalAirport = Airport(
-//                id =  2,
-//                iataCode = "SVO",
-//                name = "Sheremetyevo- A.S Pushkin International",
-//                passengers = 100)
-//        ),
-//        FlightPair(
-//            departureAirport = Airport(
-//                id =  1,
-//                iataCode = "FCO",
-//                name = "Leonardo da Vinci International Airport",
-//                passengers = 100),
-//            arrivalAirport = Airport(
-//                id =  2,
-//                iataCode = "SVO",
-//                name = "Sheremetyevo- A.S Pushkin International",
-//                passengers = 100)
-//        ),
-//        FlightPair(
-//            departureAirport = Airport(
-//                id =  1,
-//                iataCode = "FCO",
-//                name = "Leonardo da Vinci International Airport",
-//                passengers = 100),
-//            arrivalAirport = Airport(
-//                id =  2,
-//                iataCode = "SVO",
-//                name = "Sheremetyevo- A.S Pushkin International",
-//                passengers = 100)
-//        )
-//
-//    )
-//
-//    FlightCardList(
-//        flights = flightList,
-//
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun PreviewToggleButton(){
+    val flights = FlightPair(
+        departureAirport = Airport(
+            id =  1,
+            iataCode = "FCO",
+            name = "Leonardo da Vinci International Airport",
+            passengers = 100),
+        arrivalAirport = Airport(
+            id =  2,
+            iataCode = "SVO",
+            name = "Sheremetyevo- A.S Pushkin International",
+            passengers = 100)
+    )
+    ToggleFavoriteButton(
+        flightViewModel = FlightViewModel(FlightSearchApplication()),
+        flight = flights
+        )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewFlightCardItem(){
+    val flights = FlightPair(
+        departureAirport = Airport(
+            id =  1,
+            iataCode = "FCO",
+            name = "Leonardo da Vinci International Airport",
+            passengers = 100),
+        arrivalAirport = Airport(
+            id =  2,
+            iataCode = "SVO",
+            name = "Sheremetyevo- A.S Pushkin International",
+            passengers = 100)
+    )
+    FlightCardItem(
+        flight = flights,
+        flightViewModel = FlightViewModel(FlightSearchApplication())
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewFlightList(){
+    val flightList = listOf(
+        FlightPair(
+            departureAirport = Airport(
+                id =  1,
+                iataCode = "FCO",
+                name = "Leonardo da Vinci International Airport",
+                passengers = 100),
+            arrivalAirport = Airport(
+                id =  2,
+                iataCode = "SVO",
+                name = "Sheremetyevo- A.S Pushkin International",
+                passengers = 100)
+        ),
+        FlightPair(
+            departureAirport = Airport(
+                id =  1,
+                iataCode = "FCO",
+                name = "Leonardo da Vinci International Airport",
+                passengers = 100),
+            arrivalAirport = Airport(
+                id =  2,
+                iataCode = "SVO",
+                name = "Sheremetyevo- A.S Pushkin International",
+                passengers = 100)
+        ),
+        FlightPair(
+            departureAirport = Airport(
+                id =  1,
+                iataCode = "FCO",
+                name = "Leonardo da Vinci International Airport",
+                passengers = 100),
+            arrivalAirport = Airport(
+                id =  2,
+                iataCode = "SVO",
+                name = "Sheremetyevo- A.S Pushkin International",
+                passengers = 100)
+        )
+    )
+
+    FlightCardList(
+        flights = flightList,
+        flightViewModel = FlightViewModel(FlightSearchApplication())
+    )
+}

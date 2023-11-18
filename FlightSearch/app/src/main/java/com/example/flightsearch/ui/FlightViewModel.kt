@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-val TAG = "VIEWMODEL"
+private val TAG = "VIEWMODEL"
 
 data class FlightUiState(
     var flightList: List<FlightPair> = mutableListOf(),

@@ -1,7 +1,13 @@
 package com.example.flightsearch.ui.home
 
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,15 +31,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.flightsearch.ui.FlightUiState
 import com.example.flightsearch.ui.theme.FlightSearchTheme
 
+private val TAG = "SEARCHBAR"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -45,15 +57,13 @@ fun SearchBar(
     modifier: Modifier = Modifier
 ) {
     val searchTextValue = remember {
-        mutableStateOf(
-            TextFieldValue(
-                text = flightUiState.searchText,
-                selection = TextRange(flightUiState.searchText.length)
-            )
-        )
+        mutableStateOf(TextFieldValue("", TextRange(0)))
     }
     var isDropdownExpanded by remember { mutableStateOf(false) }
-    var selectedSuggestion by remember { mutableStateOf<String?>(null) }
+    var suggestionSelected by remember { mutableStateOf(false) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
 
     // Update displayedSearchText when flightUiState.searchText changes
     LaunchedEffect(flightUiState.searchText) {
@@ -63,51 +73,71 @@ fun SearchBar(
         )
     }
 
-    TextField(
-        value = searchTextValue.value,
-        onValueChange = { textFieldValue ->
-            searchTextValue.value = textFieldValue.copy(
-                selection = TextRange(textFieldValue.text.length)
-            )
-            onSearchTextChange(textFieldValue.text)
-            isDropdownExpanded = textFieldValue.text.isNotEmpty()
-        },
-        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "") },
-        trailingIcon = {
-           if(searchTextValue.value.text.isNotEmpty()){
-               IconButton(onClick = {
-                   onSearchTextChange("")
-                   isDropdownExpanded = false
-               }) {
-                   Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear Search")
-               }
-           }
-        },
-        placeholder = { Text(text = "Search") },
-        singleLine = true,
-        modifier = modifier.fillMaxWidth()
-    )
-
-   if(isDropdownExpanded && selectedSuggestion == null) {
-        Box(
-            modifier = Modifier
+    Column(
+    ) {
+        //Search Bar
+        TextField(
+            value = searchTextValue.value,
+            onValueChange = { textFieldValue ->
+                searchTextValue.value = textFieldValue.copy(
+                    selection = TextRange(textFieldValue.text.length)
+                )
+                onSearchTextChange(textFieldValue.text)
+                isDropdownExpanded = textFieldValue.text.isNotEmpty()
+            },
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "") },
+            trailingIcon = {
+                if(searchTextValue.value.text.isNotEmpty()){
+                    IconButton(onClick = {
+                        onSearchTextChange("")
+                        isDropdownExpanded = false
+                        suggestionSelected = false
+                    }) {
+                        Icon(imageVector = Icons.Default.Clear, contentDescription = "Clear Search")
+                    }
+                }
+            },
+            placeholder = { Text(text = "Search") },
+            singleLine = true,
+            modifier = modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
-        ){
-            Column{
-                autocompleteSuggestions.forEach{ suggestion ->
-                    Text(
-                        text = suggestion,
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable {
-                                selectedSuggestion = suggestion.substring(0,3)
-                                onSuggestionClick(selectedSuggestion!!)
-                                isDropdownExpanded = false
-                            }
-                    )
+                .focusable()
+                .focusRequester(focusRequester)
+                .onFocusChanged {
+                    Log.d(TAG, "${it.isFocused}")
+                }
+        )
+
+        // Dropdown suggestions
+        AnimatedVisibility(
+            visible = (isDropdownExpanded && !suggestionSelected),
+            enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(250)),
+            exit = slideOutVertically(targetOffsetY = { 0}, animationSpec = tween(250))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(16.dp)
+            ) {
+                Column {
+                    autocompleteSuggestions.forEach { suggestion ->
+                        Text(
+                            text = suggestion,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                                .focusProperties { canFocus = false }
+                                .clickable(
+                                    true,
+                                    onClick = {
+                                    onSuggestionClick(suggestion.substring(0, 3))
+                                    isDropdownExpanded = false
+                                    suggestionSelected = true
+                                    keyboardController?.hide()
+                                })
+                        )
+                    }
                 }
             }
         }
@@ -117,7 +147,11 @@ fun SearchBar(
 @Preview(showBackground = true)
 @Composable
 fun PreviewSearchBar() {
-    val uiState = FlightUiState(emptyList(), "Fake Text")
+    val uiState = FlightUiState(emptyList(), "")
+
+    val suggestions: List<AnnotatedString> = listOf(
+        buildAnnotatedString { append("OPO - Francisco Sa Carneiro Airport") },
+    )
 
     FlightSearchTheme {
         // A surface container using the 'background' color from the theme
@@ -128,7 +162,7 @@ fun PreviewSearchBar() {
             Column {
                 SearchBar(
                     flightUiState = uiState,
-                    autocompleteSuggestions = emptyList(),
+                    autocompleteSuggestions = suggestions,
                     onSearchTextChange = {},
                     onSuggestionClick = {},
                     modifier = Modifier.fillMaxWidth()
