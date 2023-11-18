@@ -67,7 +67,6 @@ fun FlightAppBody(
                 airportViewModel.onSearchTextChanged(newText)
              },
             onSuggestionClick = { selectedText ->
-                airportViewModel.onSuggestionClick(selectedText)
                 airportViewModel.generateFlights(selectedText, airportsList)
                 selectedAirport = selectedText
             }
