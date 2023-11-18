@@ -1,6 +1,5 @@
 package com.example.flightsearch.ui
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -22,6 +21,7 @@ import com.example.flightsearch.data.favorite.FavoriteRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
@@ -42,9 +42,8 @@ class FlightViewModel(
     private val _flightUiState: MutableStateFlow<FlightUiState> = MutableStateFlow(FlightUiState())
     val flightUiState: StateFlow<FlightUiState> get() = _flightUiState
 
-    private var _favoriteFlightPairs = mutableStateListOf<FlightPair>()
-    val favoriteFlightPair: List<FlightPair>
-        get() = _favoriteFlightPairs
+    private var _favoriteFlightPairs = MutableStateFlow<List<FlightPair>>(emptyList())
+    val favoriteFlightPair: StateFlow<List<FlightPair>> = _favoriteFlightPairs.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -52,7 +51,9 @@ class FlightViewModel(
             searchTextRepository.saveSearchText.collect{ savedSearchText ->
                 _flightUiState.value = _flightUiState.value.copy(searchText = savedSearchText ?: "")
             }
+        }
 
+        viewModelScope.launch {
             //Get latest Favorite List
             populateFavoriteFlightPairs()
         }
@@ -60,12 +61,8 @@ class FlightViewModel(
 
     fun getAllAirports(): Flow<List<Airport>> = flightRepository.getAirports()
 
-    fun onSuggestionClick(suggestion: String){
-        saveSearchText(null, suggestion)
-    }
-
     fun onSearchTextChanged(searchText: String){
-        saveSearchText(searchText, null)
+        saveSearchText(searchText)
     }
 
     fun autocompleteSuggestions(query: String, airports: List<Airport>): List<AnnotatedString> {
@@ -103,24 +100,17 @@ class FlightViewModel(
     }
 
     fun toggleFavorite(flight: FlightPair, isFavorite: Boolean){
-        viewModelScope.launch {
-            if(_favoriteFlightPairs.contains(flight)){
-                removeFavoriteFlight(flight)
-                _favoriteFlightPairs.remove(flight)
-            }else{
-                insertFavoriteFlight(flight)
-                _favoriteFlightPairs.add(flight)
-            }
+        if(isFavorite){
+            removeFavoriteFlight(flight)
+        }else{
+            insertFavoriteFlight(flight)
         }
     }
 
     /** Helper Functions */
-    private fun saveSearchText(searchText: String?, suggestion: String?){
-        // Use suggestion if available, otherwise use searchText
-        val textToSave = suggestion ?: searchText
-
+    private fun saveSearchText(searchText: String?){
         viewModelScope.launch {
-            textToSave?.let {
+            searchText?.let {
                 searchTextRepository.saveSearchTextPreference(it)
             }
         }
@@ -135,19 +125,31 @@ class FlightViewModel(
         updateFlightUiState(updatedUiState)
     }
 
-    private suspend fun insertFavoriteFlight(flight: FlightPair){
-        favoriteRepository.insertFavoriteFlight(convertToFavorite(flight))
+    private fun insertFavoriteFlight(flight: FlightPair){
+        //Update local Favorites List
+        _favoriteFlightPairs.value = _favoriteFlightPairs.value + flight
+
+        //Add entry to Favorite
+        viewModelScope.launch {
+            favoriteRepository.insertFavoriteFlight(convertToFavorite(flight))
+        }
     }
 
-    private suspend fun removeFavoriteFlight(flight: FlightPair){
-        //Retrieve the favorite entry that needs to be deleted
-        val favoriteToDelete = favoriteRepository.getFavoriteByFlightPair(
-            flight.departureAirport.iataCode,
-            flight.arrivalAirport.iataCode
-        )
+    private fun removeFavoriteFlight(flight: FlightPair){
+        //Update the local favorite list by filtering out the removed entry
+        _favoriteFlightPairs.value = _favoriteFlightPairs.value.filterNot { it.matches(flight) }
 
-        if(favoriteToDelete != null){
-            favoriteRepository.deleteFavoriteFlight(favoriteToDelete)
+        viewModelScope.launch {
+            //Retrieve the favorite entry that needs to be deleted
+            val favoriteToDelete = favoriteRepository.getFavoriteByFlightPair(
+                flight.departureAirport.iataCode,
+                flight.arrivalAirport.iataCode
+            )
+
+            //Delete entry from database
+            if (favoriteToDelete != null) {
+                favoriteRepository.deleteFavoriteFlight(favoriteToDelete)
+            }
         }
     }
 
@@ -159,9 +161,12 @@ class FlightViewModel(
         )
     }
 
-    private suspend fun populateFavoriteFlightPairs() {
-        _favoriteFlightPairs.clear()
+    private fun FlightPair.matches(favorite: FlightPair): Boolean {
+        return this.arrivalAirport.iataCode == favorite.arrivalAirport.iataCode &&
+            this.departureAirport.iataCode == favorite.departureAirport.iataCode
+    }
 
+    private suspend fun populateFavoriteFlightPairs() {
         //Get list of Favorite flights from database in List format
         val currentList = favoriteRepository.getAllFavoriteFlights().toList()
 
@@ -173,7 +178,7 @@ class FlightViewModel(
 
             if (departureAirport != null && destinationAirport != null) {
                 val flightPair = FlightPair(departureAirport, destinationAirport)
-                _favoriteFlightPairs.add(flightPair)
+                _favoriteFlightPairs.value = _favoriteFlightPairs.value + flightPair
             }
         }
     }
