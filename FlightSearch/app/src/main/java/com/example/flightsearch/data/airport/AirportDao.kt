@@ -12,7 +12,7 @@ interface AirportDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(airport: Airport)
 
-    @Query("SELECT * from airport")
+    @Query("SELECT * from airport ORDER BY passengers DESC")
     fun getAirports() : Flow<List<Airport>>
 
     @Query("SELECT * FROM airport WHERE iata_code = :airportCode")

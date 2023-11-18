@@ -25,8 +25,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
-private val TAG = "VIEWMODEL"
-
 data class FlightUiState(
     var flightList: List<FlightPair> = mutableListOf(),
     val searchText: String = "",
