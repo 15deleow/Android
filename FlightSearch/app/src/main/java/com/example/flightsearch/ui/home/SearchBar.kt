@@ -61,7 +61,6 @@ fun SearchBar(
     }
     var isDropdownExpanded by remember { mutableStateOf(false) }
     var suggestionSelected by remember { mutableStateOf(false) }
-    val isTextFieldFocused = remember { mutableStateOf(false) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
@@ -113,7 +112,7 @@ fun SearchBar(
         AnimatedVisibility(
             visible = (isDropdownExpanded && !suggestionSelected),
             enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(250)),
-            exit = slideOutVertically(targetOffsetY = { it - it}, animationSpec = tween(250))
+            exit = slideOutVertically(targetOffsetY = { 0}, animationSpec = tween(250))
         ) {
             Box(
                 modifier = Modifier
