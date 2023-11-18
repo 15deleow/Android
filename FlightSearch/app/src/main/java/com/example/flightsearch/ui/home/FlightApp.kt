@@ -10,7 +10,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -38,8 +37,7 @@ fun FlightApp(
             FlightAppTopAppBar(scrollBehavior = scrollBehavior)
         },
     ) { innerPadding ->
-        Column(
-        ) {
+        Column {
             FlightAppBody(
                 airportViewModel = flightViewModel,
                 modifier = Modifier.padding(innerPadding)
@@ -48,7 +46,6 @@ fun FlightApp(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FlightAppBody(
     airportViewModel: FlightViewModel,
@@ -56,7 +53,8 @@ fun FlightAppBody(
 ){
     val flightUiState by airportViewModel.flightUiState.collectAsState()
     val airportsList by airportViewModel.getAllAirports().collectAsState(initial = emptyList())
-    var selectedAirport by remember { mutableStateOf<String>("") }
+    val favoriteList by airportViewModel.favoriteFlightPair.collectAsState()
+    var selectedAirport by remember { mutableStateOf("") }
 
     Column(modifier = modifier) {
         SearchBar(
@@ -72,11 +70,10 @@ fun FlightAppBody(
             }
         )
 
-
         if(flightUiState.searchText.isEmpty()){
             ListHeaderText(header = stringResource(id = R.string.favorite_flights))
             FlightCardList(
-                flights = airportViewModel.favoriteFlightPair,
+                flights = favoriteList,
                 flightViewModel = airportViewModel
             )
             selectedAirport = ""

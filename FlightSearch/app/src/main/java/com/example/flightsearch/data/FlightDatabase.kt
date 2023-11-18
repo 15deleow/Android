@@ -39,7 +39,7 @@ abstract class FlightDatabase: RoomDatabase() {
                     DATABASE_NAME
                 )
                     .createFromAsset(PREDEFINED_DATABASE_PATH)
-                    .addCallback(object : RoomDatabase.Callback(){
+                    .addCallback(object : Callback(){
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
                             populateAirportTable(context, getDatabase(context))

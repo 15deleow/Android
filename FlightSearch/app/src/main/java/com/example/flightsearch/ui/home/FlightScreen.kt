@@ -16,6 +16,8 @@ import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -112,7 +114,9 @@ fun ToggleFavoriteButton(
     flight: FlightPair,
     modifier: Modifier = Modifier
 ){
-    val isFavorite = flightViewModel.favoriteFlightPair.contains(flight)
+    // Observe the StateFlow in the UI layer
+    val favoriteList by flightViewModel.favoriteFlightPair.collectAsState()
+    val isFavorite = favoriteList.contains(flight)
 
     IconToggleButton(
         checked = isFavorite,

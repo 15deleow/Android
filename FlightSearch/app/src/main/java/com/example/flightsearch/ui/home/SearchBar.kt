@@ -1,6 +1,5 @@
 package com.example.flightsearch.ui.home
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
@@ -34,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextRange
@@ -44,8 +42,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.flightsearch.ui.FlightUiState
 import com.example.flightsearch.ui.theme.FlightSearchTheme
-
-private val TAG = "SEARCHBAR"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
@@ -73,8 +69,7 @@ fun SearchBar(
         )
     }
 
-    Column(
-    ) {
+    Column {
         //Search Bar
         TextField(
             value = searchTextValue.value,
@@ -103,9 +98,6 @@ fun SearchBar(
                 .fillMaxWidth()
                 .focusable()
                 .focusRequester(focusRequester)
-                .onFocusChanged {
-                    Log.d(TAG, "${it.isFocused}")
-                }
         )
 
         // Dropdown suggestions
